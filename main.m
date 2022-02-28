@@ -1,5 +1,7 @@
 function [] = main()
-    [x,y,xf,yf,n] = MakeModel(0.05,91);
+    resolution = 171;
+    dd = 0.02;
+    [x,y,xf,yf,n] = MakeModel(dd,resolution);
     bb = [min(x(:)),max(x(:)),min(y(:)),max(y(:))];
     %{
     plot(x,y,'ro:',xf,yf,'+k');
@@ -19,7 +21,7 @@ function [] = main()
     alpha = G\b;
     
     
-    [X,Y] = meshgrid(linspace(bb(1),bb(2),21),linspace(bb(3),bb(4),21));
+    [X,Y] = meshgrid(linspace(bb(1),bb(2),11),linspace(bb(3),bb(4),11));
     %disp(alpha);
     [u,v] = RecoverMFSResults(alpha,X,Y,xf,yf);
     
@@ -40,4 +42,6 @@ function [] = main()
     subplot(2,1,2);
     plot(xp,yp);
     fprintf('MaxV(y = 0.5) = %0.9f\n',max(yp));
+    filename = sprintf('MFSxyuv_%d.mat',resolution);
+    save(filename,'X','Y','u','v','dd','resolution');
 end
