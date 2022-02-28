@@ -1,0 +1,21 @@
+function [x,y,xf,yf,n] = MakeModel(x0,y0,w,h,nx,ny,dd)
+    arguments
+       x0 (1,1) {mustBeNumeric, mustBeFinite} = 0;
+       y0 (1,1) {mustBeNumeric, mustBeFinite} = 0;
+       w (1,1) {mustBeNumeric, mustBeFinite} = 1;
+       h (1,1) {mustBeNumeric, mustBeFinite} = 1; 
+       nx (1,1) {mustBeNumeric, mustBeFinite} = 11; 
+       ny (1,1) {mustBeNumeric, mustBeFinite} = 11; 
+       dd (1,1) {mustBeNumeric, mustBeFinite} = 0.1;
+    end
+    
+    xx = linspace(x0,x0+w,nx);
+    yy = linspace(y0,y0+h,ny);
+    yy = yy(2:end-1);
+    
+    x = [xx,yy*0]
+    x = [xx,xx(2:end-1)*0+1,fliplr(xx),xx(2:end-1)*0];   
+    y = [xx*0,xx(2:end-1),xx*0+1,flip(xx(2:end-1))];
+    n = FindNormals(x,y);
+    [xf,yf] = FakeNodes(x,y,n,0.1);
+end

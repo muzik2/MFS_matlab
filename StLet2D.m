@@ -1,5 +1,10 @@
 function [G] = StLet2D(xs,xr,mu)
     % 2D Stokeslet
+    arguments
+       xs (1,2)  {mustBeNumeric, mustBeFinite} = [0,0];
+       xr (1,2)  {mustBeNumeric, mustBeFinite} = [1,1];
+       mu (1,1)  {mustBeNumeric, mustBeFinite} = 1;
+    end
     dx = xs(1)-xr(1);
     dy = xs(2)-xr(2);
     r2 = dx^2+dy^2;
