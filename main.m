@@ -1,6 +1,6 @@
 function [] = main()
-    resolution = 171;
-    dd = 0.02;
+    resolution = 11;
+    dd = 0.2;
     [x,y,xf,yf,n] = MakeModel(dd,resolution);
     bb = [min(x(:)),max(x(:)),min(y(:)),max(y(:))];
     %{
@@ -17,7 +17,12 @@ function [] = main()
     inds = find(abs(y-bb(4))<1e-5);
     b = zeros(2*N,1);
     b(inds*2-1) = 1;
-    
+    %{
+    for i=1:N
+        b(i*2-1) = y(i)^2;
+        b(i*2) = -x(i)^2;
+    end
+    %}
     alpha = G\b;
     
     
@@ -43,5 +48,5 @@ function [] = main()
     plot(xp,yp);
     fprintf('MaxV(y = 0.5) = %0.9f\n',max(yp));
     filename = sprintf('MFSxyuv_%d.mat',resolution);
-    save(filename,'X','Y','u','v','dd','resolution');
+    save(filename,'X','Y','u','v','dd','resolution','xf','yf');
 end

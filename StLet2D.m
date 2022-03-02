@@ -5,6 +5,9 @@ function [G] = StLet2D(xs,xr,mu)
        xr (1,2)  {mustBeNumeric, mustBeFinite} = [1,1];
        mu (1,1)  {mustBeNumeric, mustBeFinite} = 1;
     end
+    xs = xs;
+    xr = xr;
+    mu = 1;
     dx = xs(1)-xr(1);
     dy = xs(2)-xr(2);
     r2 = dx^2+dy^2;
