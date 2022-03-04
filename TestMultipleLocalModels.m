@@ -94,13 +94,14 @@ function [] = TestMultipleLocalModels()
         end
     end    
     
-    plot(Bg-B);
+    %plot(Bg-B);
     UV = Ag\B;
     UU = UV(1:2:end);
     VV = UV(2:2:end);
     plot([0,1,1,0,0],[0,0,1,1,0],'-r');
     hold on
-    quiver(res.X(:),res.Y(:),UU(:),VV(:),'color','b');
+    %quiver(res.X(:),res.Y(:),UU(:),VV(:),'color','b');
+    quiver(res.X(:),res.Y(:),Bg(1:2:end),Bg(2:2:end),'color','b');
     daspect([1,1,1]);
     hold off
 end
