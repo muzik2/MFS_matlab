@@ -30,73 +30,90 @@ function [] = main()
     %disp(alpha);
     [u,v] = RecoverMFSResults(alpha,X,Y,xf,yf);
     
-    %subplot(2,1,1);
+    %{
+    subplot(2,1,1);
+    %}
     plot(x,y,'ro:',xf,yf,'+k');
+    for i=1:numel(xf)
+       text(xf(i),yf(i),sprintf(' %d',i));
+    end
     hold on
     %quiver(X(:),Y(:),u(:),v(:),'b','AutoScaleFactor',1.5);
     hold off
     daspect([1,1,1]);
+   
     
-    %fprintf('MaxV(y = 0.5) = %0.9f\n',max(yp));
+    % LOCAL PART
+    eps = 1e-5;
+    N = numel(X);
+    Al = eye(2*N);
+    bl = zeros(2*N,1);
+    uv = zeros(2*N,1);
+    uv(1:2:end) = u;
+    uv(2:2:end) = v;
+    for i=1:N
+        %ti = 8*11-2;
+        %i = 91;
+        if(X(i)>eps && X(i)<1-eps && Y(i)>eps && Y(i)<1-eps)
+            ddx = 1.003/(resolution-1);
+            inds = SelectBoundaryByRectangle(X(i)-ddx,Y(i)-ddx,ddx*2,ddx*2,X(:),Y(:));
+            
+            if i==13 || true
+                [r,c] = ind2sub(size(X),i);
+                %fii = [c-1,c,c+1,10+r,31-c,32-c,33-c,42-r];
+                %fii = [2,16,17,18,30,34,35,36];
+                %[row0,Rcols] = GetLocalMFSRow(X(i),Y(i),X(inds),Y(inds),xf(fii),yf(fii),u(inds),v(inds));
+                [row0,Rcols] = GetLocalMFSRow(X(i),Y(i),X(inds),Y(inds),xf,yf,u(inds),v(inds));
+                finds=unique(floor((Rcols+1)/2));
+                
+                fac = 1;
+                hold on
+                plot(X(inds),Y(inds),'sk:');
+                quiver(X(inds),Y(inds),u(inds)*fac,v(inds)*fac,'b','AutoScale','off');
+                quiver(X(i),Y(i),u(i)*fac,v(i)*fac,'g','AutoScale','off');
+                plot(xf(finds),yf(finds),'sr');
+                hold off
+                
+                fprintf('(%d, %d)\n',r,c);
+                pp = 1; 
+            else
+                [row0,Rcols] = GetLocalMFSRow(X(i),Y(i),X(inds),Y(inds),xf,yf,u(inds),v(inds));
+                finds=unique(floor((Rcols+1)/2));
+            end
+            
+            
+            
+            nn = numel(inds);
+            b = zeros(2*nn,1);
+            b(1:2:end) = u(inds);
+            b(2:2:end) = v(inds);
+            ii = zeros(2*nn,1);
+            ii(1:2:end) = inds*2-1;
+            ii(2:2:end) = inds*2;
+            res0 = row0*b;
+            
+            Al([i*2-1,i*2],ii) = -row0;
+            fprintf('%d\tUor = % .7f\tVor = % .7f\n \tU   = % .7f\tV   = % .7f\n',i,u(i),v(i),res0(1),res0(2));
+        else
+            bl(i*2-1) = u(i);
+            bl(i*2) = v(i);
+            fprintf('%d\tUor = % .7f\tVor = % .7f\n',i,u(i),v(i));
+        end
+    end
+    res = Al*uv-bl;
+    %res = Al\bl;
     
-    %{
-    % Middle profile 
-    ym = (bb(4)+bb(3))/2;
-    [~,im] = min(abs(ym-Y(:)));
-    pinds = find(abs(Y(:)-Y(im))<1e-5);
+    Ul = res(1:2:end);
+    Vl = res(2:2:end);
     
-    xp = X(pinds);
-    yp = v(pinds);
-    subplot(2,1,2);
-    plot(xp,yp);
-    
-    %filename = sprintf('MFSxyuv_%d.mat',resolution);
-    %save(filename,'X','Y','u','v','dd','resolution','xf','yf');
-    %}
-    ti = 4*11-5;
-    ddx = 1.003/(resolution-1);
-    inds = SelectBoundaryByRectangle(X(ti)-ddx,Y(ti)-ddx,ddx*2,ddx*2,X(:),Y(:));
-    fac = 1;
+    plot(x,y,'ro:',xf,yf,'+k');
     hold on
-    plot(X(inds),Y(inds),'sk:');
-    quiver(X(inds),Y(inds),u(inds)*fac,v(inds)*fac,'b','AutoScale','off');
-    quiver(X(ti),Y(ti),u(ti)*fac,v(ti)*fac,'g','AutoScale','off');
-    %plot(xf(finds),yf(finds),'sr');
+    quiver(X(:),Y(:),Ul(:),Vl(:),'b','AutoScaleFactor',1.5);
     hold off
+    daspect([1,1,1]);
     
-    fi = [3,4,5,16,27,28,35,36];
-    nf = numel(fi);
-    nn = numel(inds);
-    A = zeros(2*nn,2*nf);
-    b = zeros(2*nn,1);
-    for i=1:nn
-       xs = [X(inds(i)),Y(inds(i))];
-       for j=1:nf
-          g = StLet2D(xs,[xf(fi(j)),yf(fi(j))],1); 
-          A([i*2-1,i*2],[j*2-1,j*2]) = g; 
-       end
-       b([i*2-1,i*2]) = [u(inds(i)),v(inds(i))];
-    end
-    
-    alpha = A\b; 
-    
-    Xm = [X(ti),Y(ti)];
-    row = zeros(2,2*nn);
-    for j=1:nf
-       g = StLet2D(Xm,[xf(fi(j)),yf(fi(j))],1); 
-       row(:,[j*2-1,j*2]) = g; 
-    end
-    res = row*alpha;
-    arow = row;%(:,ctx);
-    ares = arow*alpha;
-    
-    Lrow = arow/A;
-    res0 = Lrow*b;
-    
-    Um = res(1);
-    Vm = res(2);
-    fprintf('Uor = %0.9f\tU = %0.9f\tU0 = %0.9f\nVor = %0.9f\tV = %0.9f\tV0 = %0.9f\n',...
-            u(ti),Um,res0(1),Vm,v(ti),res0(2));
+    %plot(res);
+    pp = 1;
 end
 
 
