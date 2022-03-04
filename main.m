@@ -56,7 +56,6 @@ function [] = main()
     ti = 4*11-5;
     ddx = 1.003/(resolution-1);
     inds = SelectBoundaryByRectangle(X(ti)-ddx,Y(ti)-ddx,ddx*2,ddx*2,X(:),Y(:));
-    finds = FindClosestPoints(X(inds),Y(inds),xf,yf);
     fac = 1;
     hold on
     plot(X(inds),Y(inds),'sk:');
